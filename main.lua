@@ -1,4 +1,4 @@
-local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/GRPGaming/Key-System/refs/heads/Xycer-Hub-Script/ZusumeLib(Slider)"))()
+local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/GRPGaming/Key-System/refs/heads/Xycer-Hub-Script/ZusumeLib"))()
 
 local Window = OrionLib:MakeWindow({
     Name = "Main Hack",
@@ -18,8 +18,79 @@ local duplicationEnabled = false
 local duplicationAmount = 1
 local selectedItem = nil
 
--- Ambil semua item dari Backpack
 local player = game.Players.LocalPlayer
+
+-- Daftar valid item untuk spawn (no visual)
+local validEggs = {
+    ["Bug Egg"] = true,
+    ["Mythical Egg"] = true,
+    ["Legendary Egg"] = true,
+}
+
+local validAnimals = {
+    ["Racoon"] = true,
+    ["Red Fox"] = true,
+}
+
+local validSeeds = {
+    ["Candy Blossom"] = true,
+    ["Moon Blossom"] = true,
+    ["Cherry Blossom"] = true,
+}
+
+-- Fungsi spawn item tanpa UI, non-visual
+local function spawnItem(category, itemName, amount)
+    amount = amount or 1
+
+    if category == "egg" and not validEggs[itemName] then
+        warn("Egg tidak valid: "..tostring(itemName))
+        return
+    elseif category == "hewan" and not validAnimals[itemName] then
+        warn("Hewan tidak valid: "..tostring(itemName))
+        return
+    elseif category == "seed" and not validSeeds[itemName] then
+        warn("Seed tidak valid: "..tostring(itemName))
+        return
+    elseif category == "tanaman" then
+        warn("Kategori 'tanaman' tidak didukung.")
+        return
+    elseif category ~= "egg" and category ~= "hewan" and category ~= "seed" then
+        warn("Kategori spawn tidak dikenali: "..tostring(category))
+        return
+    end
+
+    -- Cari container yang sesuai, atau fallback ke Backpack
+    local container
+    if category == "egg" then
+        container = player.Backpack:FindFirstChild("Eggs") or player.Backpack
+    elseif category == "hewan" then
+        container = player.Backpack:FindFirstChild("Pets") or player.Backpack
+    elseif category == "seed" then
+        container = player.Backpack:FindFirstChild("Seeds") or player.Backpack
+    end
+
+    if not container then
+        warn("Container untuk kategori "..category.." tidak ditemukan.")
+        return
+    end
+
+    -- Cari item di container
+    local item = container:FindFirstChild(itemName)
+    if not item then
+        warn("Item '"..itemName.."' tidak ditemukan di "..category)
+        return
+    end
+
+    -- Spawn clone sebanyak amount
+    for i = 1, amount do
+        local clone = item:Clone()
+        clone.Parent = container
+    end
+
+    print("Spawned "..amount.." "..itemName.." ("..category..") tanpa visual")
+end
+
+-- Fungsi ambil item Backpack untuk dropdown
 local function getBackpackItems()
     local items = {}
     for _, item in ipairs(player.Backpack:GetChildren()) do
@@ -28,7 +99,7 @@ local function getBackpackItems()
     return items
 end
 
--- Toggle aktifasi
+-- Toggle aktifasi duplikasi
 Tab:AddToggle({
     Name = "Aktifkan Duplikasi",
     Default = false,
@@ -50,7 +121,7 @@ Tab:AddSlider({
     end
 })
 
--- Dropdown pilih item
+-- Dropdown pilih item dari Backpack
 local itemDropdown = Tab:AddDropdown({
     Name = "Pilih Item dari Backpack",
     Default = "",
@@ -102,3 +173,11 @@ Tab:AddButton({
 })
 
 OrionLib:Init()
+
+-- **Catatan penggunaan spawnItem di console atau script:**
+-- Contoh:
+-- spawnItem("egg", "Bug Egg", 2)
+-- spawnItem("hewan", "Racoon", 1)
+-- spawnItem("seed", "Candy Blossom", 3)
+-- spawnItem("tanaman", "Anything", 1) -- Tidak akan jalan karena tanaman ditiadakan
+
