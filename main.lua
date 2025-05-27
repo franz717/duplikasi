@@ -1,57 +1,102 @@
-local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/GRPGaming/Key-System/refs/heads/Xycer-Hub-Script/ZusumeLib(Slider)')))()
+local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/GRPGaming/Key-System/refs/heads/Xycer-Hub-Script/ZusumeLib(Slider)"))()
 
 local Window = OrionLib:MakeWindow({
     Name = "Main Hack",
     HidePremium = false,
     SaveConfig = true,
-    ConfigFolder = "MainHackConfig"
+    ConfigFolder = "DuplicationConfig"
 })
 
-local MainTab = Window:MakeTab({
+local Tab = Window:MakeTab({
     Name = "Main Hack",
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false
 })
 
--- Fungsi duplikasi item
-local function duplicateItem()
-    local player = game.Players.LocalPlayer
-    local backpack = player:WaitForChild("Backpack")
-    local originalItem = backpack:FindFirstChild("ItemNameHere") -- Ganti dengan nama item sebenarnya
+-- Bagian utama toggle dan slider
+local duplicationEnabled = false
+local duplicationAmount = 1
+local selectedItem = nil
 
-    if originalItem then
-        local clonedItem = originalItem:Clone()
-        clonedItem.Parent = backpack
-        print("Item duplicated successfully!")
-    else
-        print("Item not found.")
+-- Ambil semua item dari Backpack
+local player = game.Players.LocalPlayer
+local function getBackpackItems()
+    local items = {}
+    for _, item in ipairs(player.Backpack:GetChildren()) do
+        table.insert(items, item.Name)
     end
+    return items
 end
 
--- Toggle untuk mengaktifkan duplikasi
-MainTab:AddToggle({
-    Name = "DuplicationItem",
+-- Toggle aktifasi
+Tab:AddToggle({
+    Name = "Aktifkan Duplikasi",
     Default = false,
     Callback = function(Value)
-        if Value then
-            duplicateItem()
-        end
+        duplicationEnabled = Value
     end
 })
 
--- Slider (opsional, untuk mengatur berapa kali duplikasi dilakukan)
-MainTab:AddSlider({
-    Name = "DuplicationItem",
+-- Slider jumlah duplikat
+Tab:AddSlider({
+    Name = "Jumlah Duplikat",
     Min = 1,
     Max = 10,
     Default = 1,
-    Color = Color3.fromRGB(255,255,255),
     Increment = 1,
-    ValueName = "times",
-    Callback = function(value)
-        -- Fungsi yang bisa kamu gunakan nanti, misalnya:
-        for i = 1, value do
-            duplicateItem()
+    ValueName = "kali",
+    Callback = function(Value)
+        duplicationAmount = Value
+    end
+})
+
+-- Dropdown pilih item
+local itemDropdown = Tab:AddDropdown({
+    Name = "Pilih Item dari Backpack",
+    Default = "",
+    Options = getBackpackItems(),
+    Callback = function(Value)
+        selectedItem = Value
+    end
+})
+
+-- Tombol update dropdown jika ada item baru
+Tab:AddButton({
+    Name = "⟳ Perbarui Daftar Item",
+    Callback = function()
+        itemDropdown:Refresh(getBackpackItems(), true)
+    end
+})
+
+-- Tombol untuk menduplikasi
+Tab:AddButton({
+    Name = "🔁 Duplicate Now",
+    Callback = function()
+        if duplicationEnabled and selectedItem then
+            local item = player.Backpack:FindFirstChild(selectedItem)
+            if item then
+                for i = 1, duplicationAmount do
+                    local clone = item:Clone()
+                    clone.Parent = player.Backpack
+                end
+                OrionLib:MakeNotification({
+                    Name = "Berhasil",
+                    Content = "Item berhasil diduplikasi x" .. duplicationAmount,
+                    Time = 5
+                })
+            else
+                OrionLib:MakeNotification({
+                    Name = "Gagal",
+                    Content = "Item tidak ditemukan di Backpack!",
+                    Time = 5
+                })
+            end
+        else
+            OrionLib:MakeNotification({
+                Name = "Gagal",
+                Content = "Aktifkan toggle dan pilih item dulu!",
+                Time = 5
+            })
         end
     end
 })
