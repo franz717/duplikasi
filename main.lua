@@ -1,183 +1,131 @@
+-- Load Orion Library
 local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/GRPGaming/Key-System/refs/heads/Xycer-Hub-Script/ZusumeLib(Slider)"))()
 
+-- Buat window utama
 local Window = OrionLib:MakeWindow({
-    Name = "Main Hack",
+    Name = "Grow a Garden",
     HidePremium = false,
     SaveConfig = true,
-    ConfigFolder = "DuplicationConfig"
+    ConfigFolder = "GrowGardenConfigs",
+    IntroEnabled = true,
+    IntroText = "Welcome to Grow a Garden!",
+    IntroIcon = "rbxassetid://7733960981", -- bisa ganti sesuai selera
+    Icon = "rbxassetid://7733960981",
+    CloseCallback = function()
+        print("Window closed")
+    end
 })
 
-local Tab = Window:MakeTab({
-    Name = "Main Hack",
-    Icon = "rbxassetid://4483345998",
+-- Tab Spawn Seed
+local TabSeed = Window:MakeTab({
+    Name = "Spawn Seed",
+    Icon = "rbxassetid://7734057495",
     PremiumOnly = false
 })
 
--- Bagian utama toggle dan slider
-local duplicationEnabled = false
-local duplicationAmount = 1
-local selectedItem = nil
-
-local player = game.Players.LocalPlayer
-
--- Daftar valid item untuk spawn (no visual)
-local validEggs = {
-    ["Bug Egg"] = true,
-    ["Mythical Egg"] = true,
-    ["Legendary Egg"] = true,
+local SeedOptions = {
+    "BeanStalk",
+    "Candy Blossom",
+    "Cherry Blossom",
+    "Moon Blossom"
 }
 
-local validAnimals = {
-    ["Racoon"] = true,
-    ["Red Fox"] = true,
-}
-
-local validSeeds = {
-    ["Candy Blossom"] = true,
-    ["Moon Blossom"] = true,
-    ["Cherry Blossom"] = true,
-}
-
--- Fungsi spawn item tanpa UI, non-visual
-local function spawnItem(category, itemName, amount)
-    amount = amount or 1
-
-    if category == "egg" and not validEggs[itemName] then
-        warn("Egg tidak valid: "..tostring(itemName))
-        return
-    elseif category == "hewan" and not validAnimals[itemName] then
-        warn("Hewan tidak valid: "..tostring(itemName))
-        return
-    elseif category == "seed" and not validSeeds[itemName] then
-        warn("Seed tidak valid: "..tostring(itemName))
-        return
-    elseif category == "tanaman" then
-        warn("Kategori 'tanaman' tidak didukung.")
-        return
-    elseif category ~= "egg" and category ~= "hewan" and category ~= "seed" then
-        warn("Kategori spawn tidak dikenali: "..tostring(category))
-        return
-    end
-
-    -- Cari container yang sesuai, atau fallback ke Backpack
-    local container
-    if category == "egg" then
-        container = player.Backpack:FindFirstChild("Eggs") or player.Backpack
-    elseif category == "hewan" then
-        container = player.Backpack:FindFirstChild("Pets") or player.Backpack
-    elseif category == "seed" then
-        container = player.Backpack:FindFirstChild("Seeds") or player.Backpack
-    end
-
-    if not container then
-        warn("Container untuk kategori "..category.." tidak ditemukan.")
-        return
-    end
-
-    -- Cari item di container
-    local item = container:FindFirstChild(itemName)
-    if not item then
-        warn("Item '"..itemName.."' tidak ditemukan di "..category)
-        return
-    end
-
-    -- Spawn clone sebanyak amount
-    for i = 1, amount do
-        local clone = item:Clone()
-        clone.Parent = container
-    end
-
-    print("Spawned "..amount.." "..itemName.." ("..category..") tanpa visual")
-end
-
--- Fungsi ambil item Backpack untuk dropdown
-local function getBackpackItems()
-    local items = {}
-    for _, item in ipairs(player.Backpack:GetChildren()) do
-        table.insert(items, item.Name)
-    end
-    return items
-end
-
--- Toggle aktifasi duplikasi
-Tab:AddToggle({
-    Name = "Aktifkan Duplikasi",
+TabSeed:AddToggle({
+    Name = "Spawn Seed",
     Default = false,
-    Callback = function(Value)
-        duplicationEnabled = Value
-    end
-})
+    Callback = function(value)
+        if value then
+            for _, seed in ipairs(SeedOptions) do
+                local part = Instance.new("Part", workspace)
+                part.Name = seed
+                part.Size = Vector3.new(2, 2, 2)
+                part.Position = Vector3.new(math.random(-10, 10), 5, math.random(-10, 10))
+                part.BrickColor = BrickColor.Random()
+                part.Anchored = true
+                part.Transparency = 1
+                part.CanCollide = false
 
--- Slider jumlah duplikat
-Tab:AddSlider({
-    Name = "Jumlah Duplikat",
-    Min = 1,
-    Max = 10,
-    Default = 1,
-    Increment = 1,
-    ValueName = "kali",
-    Callback = function(Value)
-        duplicationAmount = Value
-    end
-})
-
--- Dropdown pilih item dari Backpack
-local itemDropdown = Tab:AddDropdown({
-    Name = "Pilih Item dari Backpack",
-    Default = "",
-    Options = getBackpackItems(),
-    Callback = function(Value)
-        selectedItem = Value
-    end
-})
-
--- Tombol update dropdown jika ada item baru
-Tab:AddButton({
-    Name = "⟳ Perbarui Daftar Item",
-    Callback = function()
-        itemDropdown:Refresh(getBackpackItems(), true)
-    end
-})
-
--- Tombol untuk menduplikasi
-Tab:AddButton({
-    Name = "🔁 Duplicate Now",
-    Callback = function()
-        if duplicationEnabled and selectedItem then
-            local item = player.Backpack:FindFirstChild(selectedItem)
-            if item then
-                for i = 1, duplicationAmount do
-                    local clone = item:Clone()
-                    clone.Parent = player.Backpack
-                end
-                OrionLib:MakeNotification({
-                    Name = "Berhasil",
-                    Content = "Item berhasil diduplikasi x" .. duplicationAmount,
-                    Time = 5
-                })
-            else
-                OrionLib:MakeNotification({
-                    Name = "Gagal",
-                    Content = "Item tidak ditemukan di Backpack!",
-                    Time = 5
-                })
+                local tweenService = game:GetService("TweenService")
+                local info = TweenInfo.new(1, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
+                local goal = {Transparency = 0, Position = part.Position + Vector3.new(0, 2, 0)}
+                local tween = tweenService:Create(part, info, goal)
+                tween:Play()
             end
         else
-            OrionLib:MakeNotification({
-                Name = "Gagal",
-                Content = "Aktifkan toggle dan pilih item dulu!",
-                Time = 5
-            })
+            for _, seed in ipairs(SeedOptions) do
+                for _, obj in ipairs(workspace:GetChildren()) do
+                    if obj.Name == seed then
+                        local tweenService = game:GetService("TweenService")
+                        local info = TweenInfo.new(1, Enum.EasingStyle.Sine, Enum.EasingDirection.In)
+                        local tween = tweenService:Create(obj, info, {Transparency = 1})
+                        tween:Play()
+                        tween.Completed:Connect(function()
+                            obj:Destroy()
+                        end)
+                    end
+                end
+            end
         end
     end
 })
 
+-- Tab Spawn Hewan
+local TabHewan = Window:MakeTab({
+    Name = "Spawn Hewan",
+    Icon = "rbxassetid://7734068325",
+    PremiumOnly = false
+})
+
+local AnimalOptions = {
+    "Polar Bear",
+    "DragonFly",
+    "Racoon",
+    "RedFox"
+}
+
+TabHewan:AddToggle({
+    Name = "Spawn Hewan",
+    Default = false,
+    Callback = function(value)
+        if value then
+            for _, animal in ipairs(AnimalOptions) do
+                local model = Instance.new("Model", workspace)
+                model.Name = animal
+
+                local part = Instance.new("Part", model)
+                part.Size = Vector3.new(3, 2, 3)
+                part.Position = Vector3.new(math.random(-15, 15), 6, math.random(-15, 15))
+                part.BrickColor = BrickColor.Random()
+                part.Anchored = true
+                part.Transparency = 1
+                part.Name = "Body"
+
+                local tweenService = game:GetService("TweenService")
+                local info = TweenInfo.new(1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+                local goal = {Transparency = 0, Position = part.Position + Vector3.new(0, 2, 0)}
+                local tween = tweenService:Create(part, info, goal)
+                tween:Play()
+            end
+        else
+            for _, animal in ipairs(AnimalOptions) do
+                for _, obj in ipairs(workspace:GetChildren()) do
+                    if obj:IsA("Model") and obj.Name == animal then
+                        local body = obj:FindFirstChild("Body")
+                        if body then
+                            local tweenService = game:GetService("TweenService")
+                            local info = TweenInfo.new(1, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
+                            local tween = tweenService:Create(body, info, {Transparency = 1})
+                            tween:Play()
+                            tween.Completed:Connect(function()
+                                obj:Destroy()
+                            end)
+                        end
+                    end
+                end
+            end
+        end
+    end
+})
+
+-- Inisialisasi UI
 OrionLib:Init()
-
--- **Catatan penggunaan spawnItem di console atau script:**
--- Contoh:
--- spawnItem("egg", "Bug Egg", 2)
--- spawnItem("hewan", "Racoon", 1)
--- spawnItem("seed", "Candy Blossom", 3)
--- spawnItem("tanaman", "Anything", 1) -- Tidak akan jalan karena tanaman ditiadakan
-
