@@ -1,131 +1,109 @@
--- Load Orion Library
-local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/GRPGaming/Key-System/refs/heads/Xycer-Hub-Script/ZusumeLib(Slider)"))()
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/GRPGaming/Key-System/refs/heads/Xycer-Hub-Script/ZusumeLib(Slider)')))()
 
--- Buat window utama
 local Window = OrionLib:MakeWindow({
-    Name = "Grow a Garden",
+    Name = "Grow A Garden",
     HidePremium = false,
     SaveConfig = true,
-    ConfigFolder = "GrowGardenConfigs",
+    ConfigFolder = "GrowAGardenUI",
     IntroEnabled = true,
-    IntroText = "Welcome to Grow a Garden!",
-    IntroIcon = "rbxassetid://7733960981", -- bisa ganti sesuai selera
-    Icon = "rbxassetid://7733960981",
-    CloseCallback = function()
-        print("Window closed")
-    end
+    IntroText = "Grow A Garden 🌱",
+    IntroIcon = "rbxassetid://7733964640", -- Optional custom icon
+    Icon = "rbxassetid://7733964640"
 })
 
--- Tab Spawn Seed
+-- TAB: Spawn Seed
 local TabSeed = Window:MakeTab({
     Name = "Spawn Seed",
-    Icon = "rbxassetid://7734057495",
+    Icon = "rbxassetid://7734053491",
     PremiumOnly = false
 })
 
-local SeedOptions = {
-    "BeanStalk",
-    "Candy Blossom",
-    "Cherry Blossom",
-    "Moon Blossom"
-}
+TabSeed:AddSection({Name = "Pilih Seed"})
+
+local seedDropdown = TabSeed:AddDropdown({
+    Name = "Jenis Seed",
+    Default = "BeanStalk",
+    Options = {"BeanStalk", "Candy Blossom", "Cherry Blossom", "Moon Blossom"},
+    Callback = function(Value)
+        print("Seed dipilih:", Value)
+    end
+})
+
+TabSeed:AddTextbox({
+    Name = "Atau Ketik Nama Seed",
+    Default = "",
+    TextDisappear = false,
+    Callback = function(Value)
+        print("Seed diketik:", Value)
+        seedDropdown:Set(Value)
+    end
+})
 
 TabSeed:AddToggle({
     Name = "Spawn Seed",
     Default = false,
-    Callback = function(value)
-        if value then
-            for _, seed in ipairs(SeedOptions) do
-                local part = Instance.new("Part", workspace)
-                part.Name = seed
-                part.Size = Vector3.new(2, 2, 2)
-                part.Position = Vector3.new(math.random(-10, 10), 5, math.random(-10, 10))
-                part.BrickColor = BrickColor.Random()
-                part.Anchored = true
-                part.Transparency = 1
-                part.CanCollide = false
-
-                local tweenService = game:GetService("TweenService")
-                local info = TweenInfo.new(1, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
-                local goal = {Transparency = 0, Position = part.Position + Vector3.new(0, 2, 0)}
-                local tween = tweenService:Create(part, info, goal)
-                tween:Play()
-            end
+    Callback = function(Value)
+        if Value then
+            print("Menyspawn seed:", OrionLib.Flags["jenisSeed"].Value or "Tidak ada")
+            -- Tambahkan animasi spawn jika perlu
         else
-            for _, seed in ipairs(SeedOptions) do
-                for _, obj in ipairs(workspace:GetChildren()) do
-                    if obj.Name == seed then
-                        local tweenService = game:GetService("TweenService")
-                        local info = TweenInfo.new(1, Enum.EasingStyle.Sine, Enum.EasingDirection.In)
-                        local tween = tweenService:Create(obj, info, {Transparency = 1})
-                        tween:Play()
-                        tween.Completed:Connect(function()
-                            obj:Destroy()
-                        end)
-                    end
-                end
-            end
+            print("Spawn seed dimatikan")
         end
-    end
+    end,
+    Flag = "spawnSeedToggle",
+    Save = true
 })
 
--- Tab Spawn Hewan
+-- TAB: Spawn Hewan
 local TabHewan = Window:MakeTab({
     Name = "Spawn Hewan",
-    Icon = "rbxassetid://7734068325",
+    Icon = "rbxassetid://7734057493",
     PremiumOnly = false
 })
 
-local AnimalOptions = {
-    "Polar Bear",
-    "DragonFly",
-    "Racoon",
-    "RedFox"
-}
+TabHewan:AddSection({Name = "Pilih Hewan"})
+
+local animalDropdown = TabHewan:AddDropdown({
+    Name = "Jenis Hewan",
+    Default = "Polar Bear",
+    Options = {"Polar Bear", "DragonFly", "Racoon", "RedFox"},
+    Callback = function(Value)
+        print("Hewan dipilih:", Value)
+    end
+})
+
+TabHewan:AddTextbox({
+    Name = "Atau Ketik Nama Hewan",
+    Default = "",
+    TextDisappear = false,
+    Callback = function(Value)
+        print("Hewan diketik:", Value)
+        animalDropdown:Set(Value)
+    end
+})
 
 TabHewan:AddToggle({
     Name = "Spawn Hewan",
     Default = false,
-    Callback = function(value)
-        if value then
-            for _, animal in ipairs(AnimalOptions) do
-                local model = Instance.new("Model", workspace)
-                model.Name = animal
-
-                local part = Instance.new("Part", model)
-                part.Size = Vector3.new(3, 2, 3)
-                part.Position = Vector3.new(math.random(-15, 15), 6, math.random(-15, 15))
-                part.BrickColor = BrickColor.Random()
-                part.Anchored = true
-                part.Transparency = 1
-                part.Name = "Body"
-
-                local tweenService = game:GetService("TweenService")
-                local info = TweenInfo.new(1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
-                local goal = {Transparency = 0, Position = part.Position + Vector3.new(0, 2, 0)}
-                local tween = tweenService:Create(part, info, goal)
-                tween:Play()
-            end
+    Callback = function(Value)
+        if Value then
+            print("Menyspawn hewan:", OrionLib.Flags["jenisHewan"].Value or "Tidak ada")
+            -- Tambahkan animasi spawn jika perlu
         else
-            for _, animal in ipairs(AnimalOptions) do
-                for _, obj in ipairs(workspace:GetChildren()) do
-                    if obj:IsA("Model") and obj.Name == animal then
-                        local body = obj:FindFirstChild("Body")
-                        if body then
-                            local tweenService = game:GetService("TweenService")
-                            local info = TweenInfo.new(1, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
-                            local tween = tweenService:Create(body, info, {Transparency = 1})
-                            tween:Play()
-                            tween.Completed:Connect(function()
-                                obj:Destroy()
-                            end)
-                        end
-                    end
-                end
-            end
+            print("Spawn hewan dimatikan")
         end
+    end,
+    Flag = "spawnAnimalToggle",
+    Save = true
+})
+
+-- OPTIONAL: Tombol tutup UI
+TabHewan:AddButton({
+    Name = "Tutup UI",
+    Callback = function()
+        OrionLib:Destroy()
+        print("UI ditutup")
     end
 })
 
--- Inisialisasi UI
 OrionLib:Init()
