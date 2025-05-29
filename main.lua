@@ -1,109 +1,62 @@
+-- Booting Orion Library
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/GRPGaming/Key-System/refs/heads/Xycer-Hub-Script/ZusumeLib(Slider)')))()
 
+-- Membuat window utama
 local Window = OrionLib:MakeWindow({
-    Name = "Grow A Garden",
+    Name = "Grow A Garden Inventory",
     HidePremium = false,
     SaveConfig = true,
-    ConfigFolder = "GrowAGardenUI",
-    IntroEnabled = true,
-    IntroText = "Grow A Garden 🌱",
-    IntroIcon = "rbxassetid://7733964640", -- Optional custom icon
-    Icon = "rbxassetid://7733964640"
+    ConfigFolder = "GrowAGardenConfig"
 })
 
--- TAB: Spawn Seed
-local TabSeed = Window:MakeTab({
-    Name = "Spawn Seed",
-    Icon = "rbxassetid://7734053491",
+-- Membuat tab untuk stok
+local Tab = Window:MakeTab({
+    Name = "Inventory",
+    Icon = "rbxassetid://4483345998",
     PremiumOnly = false
 })
 
-TabSeed:AddSection({Name = "Pilih Seed"})
+-- Label untuk gear, egg, dan seed (update nanti)
+local GearLabel = Tab:AddLabel("Gear: Loading...")
+local EggLabel = Tab:AddLabel("Egg: Loading...")
+local SeedLabel = Tab:AddLabel("Seed: Loading...")
 
-local seedDropdown = TabSeed:AddDropdown({
-    Name = "Jenis Seed",
-    Default = "BeanStalk",
-    Options = {"BeanStalk", "Candy Blossom", "Cherry Blossom", "Moon Blossom"},
-    Callback = function(Value)
-        print("Seed dipilih:", Value)
+-- Fungsi untuk update stok (ganti sesuai data Grow A Garden)
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local function UpdateInventory()
+    local gearCount = 0
+    local eggCount = 0
+    local seedCount = 0
+
+    -- Contoh ambil data gear dari Backpack
+    local backpack = player:FindFirstChild("Backpack")
+    if backpack then
+        gearCount = #backpack:GetChildren()
     end
-})
 
-TabSeed:AddTextbox({
-    Name = "Atau Ketik Nama Seed",
-    Default = "",
-    TextDisappear = false,
-    Callback = function(Value)
-        print("Seed diketik:", Value)
-        seedDropdown:Set(Value)
+    -- Contoh ambil data egg dan seed dari folder Inventory
+    local inventory = player:FindFirstChild("Inventory")
+    if inventory then
+        local eggs = inventory:FindFirstChild("Eggs")
+        if eggs then eggCount = #eggs:GetChildren() end
+        local seeds = inventory:FindFirstChild("Seeds")
+        if seeds then seedCount = #seeds:GetChildren() end
     end
-})
 
-TabSeed:AddToggle({
-    Name = "Spawn Seed",
-    Default = false,
-    Callback = function(Value)
-        if Value then
-            print("Menyspawn seed:", OrionLib.Flags["jenisSeed"].Value or "Tidak ada")
-            -- Tambahkan animasi spawn jika perlu
-        else
-            print("Spawn seed dimatikan")
-        end
-    end,
-    Flag = "spawnSeedToggle",
-    Save = true
-})
+    GearLabel:Set("Gear: " .. tostring(gearCount))
+    EggLabel:Set("Egg: " .. tostring(eggCount))
+    SeedLabel:Set("Seed: " .. tostring(seedCount))
+end
 
--- TAB: Spawn Hewan
-local TabHewan = Window:MakeTab({
-    Name = "Spawn Hewan",
-    Icon = "rbxassetid://7734057493",
-    PremiumOnly = false
-})
-
-TabHewan:AddSection({Name = "Pilih Hewan"})
-
-local animalDropdown = TabHewan:AddDropdown({
-    Name = "Jenis Hewan",
-    Default = "Polar Bear",
-    Options = {"Polar Bear", "DragonFly", "Racoon", "RedFox"},
-    Callback = function(Value)
-        print("Hewan dipilih:", Value)
+-- Update stok setiap 2 detik
+spawn(function()
+    while true do
+        UpdateInventory()
+        wait(2)
     end
-})
+end)
 
-TabHewan:AddTextbox({
-    Name = "Atau Ketik Nama Hewan",
-    Default = "",
-    TextDisappear = false,
-    Callback = function(Value)
-        print("Hewan diketik:", Value)
-        animalDropdown:Set(Value)
-    end
-})
-
-TabHewan:AddToggle({
-    Name = "Spawn Hewan",
-    Default = false,
-    Callback = function(Value)
-        if Value then
-            print("Menyspawn hewan:", OrionLib.Flags["jenisHewan"].Value or "Tidak ada")
-            -- Tambahkan animasi spawn jika perlu
-        else
-            print("Spawn hewan dimatikan")
-        end
-    end,
-    Flag = "spawnAnimalToggle",
-    Save = true
-})
-
--- OPTIONAL: Tombol tutup UI
-TabHewan:AddButton({
-    Name = "Tutup UI",
-    Callback = function()
-        OrionLib:Destroy()
-        print("UI ditutup")
-    end
-})
-
+-- Inisialisasi UI Orion
 OrionLib:Init()
